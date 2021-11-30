@@ -1,4 +1,5 @@
 <template>
+  <Loading :active="isLoading" />
   <div class="text-end">
     <button
       class="btn btn-primary"
@@ -70,9 +71,11 @@ export default {
       products: [],
       pagination: {},
       tempProduct: {},
-      isNew: false
+      isNew: false,
+      isLoading: false
     }
   },
+  inject: ['emitter'],
   created () {
     this.getProducts()
   },
@@ -95,9 +98,11 @@ export default {
     },
     // 取得產品列表
     getProducts () {
+      this.isLoading = true
       const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products`
       this.$http.get(api)
         .then((res) => {
+          this.isLoading = false
           if (res.data.success) {
             this.products = res.data.products
             this.pagination = res.data.pagination
@@ -106,6 +111,7 @@ export default {
     },
     // 更新產品
     updateProducts (item) {
+      this.isLoading = true
       const productComponent = this.$refs.productModal
 
       // 若是新增狀態
@@ -120,20 +126,32 @@ export default {
       // 打 API
       this.$http[httpMethod](api, { data: item })
         .then((res) => {
+          this.isLoading = false
+          productComponent.hideModal()
           if (res.data.success) {
-            productComponent.hideModal()
             this.getProducts()
+            this.emitter.emit('push-message', {
+              style: 'success',
+              title: '更新成功'
+            })
+          } else {
+            this.emitter.emit('push-message', {
+              style: 'danger',
+              title: '更新失敗',
+              content: res.data.message.join('、')
+            })
           }
         })
     },
     // 刪除產品
     deleteProduct (id) {
-      console.log(id)
+      this.isLoading = true
       const productComponent = this.$refs.deleteModal
       const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/product/${id}`
       // 打 API
       this.$http.delete(api)
         .then((res) => {
+          this.isLoading = false
           if (res.data.success) {
             productComponent.hideModal()
             this.getProducts()
