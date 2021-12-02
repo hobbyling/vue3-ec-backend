@@ -56,6 +56,7 @@
       </tr>
     </tbody>
   </table>
+  <Pagination :pages="pagination" @emit-page="getProducts" />
   <ProductModal ref="productModal" :product="tempProduct" @update-product="updateProducts" />
   <DeleteModal ref="deleteModal" :product="tempProduct" @delete-product="deleteProduct" />
 </template>
@@ -63,9 +64,10 @@
 <script>
 import ProductModal from '../components/ProductModal.vue'
 import DeleteModal from '../components/DeleteModal.vue'
+import Pagination from '../components/Pagination.vue'
 export default {
   name: 'Products',
-  components: { ProductModal, DeleteModal },
+  components: { ProductModal, DeleteModal, Pagination },
   data () {
     return {
       products: [],
@@ -97,9 +99,9 @@ export default {
       productComponent.showModal()
     },
     // 取得產品列表
-    getProducts () {
+    getProducts (page = 1) {
       this.isLoading = true
-      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products`
+      const api = `${process.env.VUE_APP_API}api/${process.env.VUE_APP_PATH}/admin/products/?page=${page}`
       this.$http.get(api)
         .then((res) => {
           this.isLoading = false
